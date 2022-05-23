@@ -7,7 +7,7 @@ import trial from "./api/trial.route.js";
 import cors from "cors";
 
 dotenv.config();
-const port = 81;
+const port = process.env.PORT || 3000;
 const app = express();
 
 app.use(cors({
