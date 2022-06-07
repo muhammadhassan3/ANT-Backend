@@ -1,4 +1,5 @@
-import { UserModel } from "../model/SubjectModel.js"
+import { SubjectModel } from "../model/SubjectModel.js"
+import {TrialModel} from "../model/TrialModel.js";
 
 const childMessage= {
     instruction1: "You are going to play a computer game where your job will be to feed a hungry fish using the mouse.  The way that you feed a fish when it appears on the screen is by pressing the button on the mouse that hit the fish's mouth.",
@@ -26,7 +27,11 @@ const assetsUrl = {
 export default class InstructionController{
     static async getMessage(req, res){
         const uid = req.query.id
-        const user = await UserModel.findById(uid).catch(err => {
+        const trialData = await TrialModel.find({userId: uid})
+        if(trialData.length > 0){
+            res.redirect(`../${uid}/result`)
+        }
+        const user = await SubjectModel.findById(uid).catch(err => {
             res.status(500).json({
                 status: "error",
                 message: err.message

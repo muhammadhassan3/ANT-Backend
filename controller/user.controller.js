@@ -1,11 +1,6 @@
-import {UserModel} from '../model/SubjectModel.js';
+import {SubjectModel} from '../model/SubjectModel.js';
 import {v4} from "uuid";
-
-let adminToken = "admin294022"
-const adminCredential = {
-    login: "admin",
-    password: "admin294022"
-}
+import {UserModel} from "../model/UserModel.js";
 
 function isRequiredParamNull(req) {
     if(req.body.id == null || req.body.name == null || req.body.session == null || req.body.age == null || req.body.sex == null || req.body.category == null || req.body.windowSize == null){
@@ -44,7 +39,7 @@ export default class UserController{
         }
 
         //Check user session is valid or not
-        const userSession = await UserModel.count({sessionNumber: session, subjectName: subjectName}).catch(err => {
+        const userSession = await SubjectModel.count({sessionNumber: session, subjectName: subjectName}).catch(err => {
             res.status(500).json({
                 status: "error",
                 message: err.message
@@ -57,7 +52,7 @@ export default class UserController{
             })
         }else {
             //Check subject id is existed or not
-            const userIdCount = await UserModel.count({userId: userId, sessionNumber: session}).catch(err => {
+            const userIdCount = await SubjectModel.count({userId: userId, sessionNumber: session}).catch(err => {
                 res.status(500).json({
                     status: "error",
                     message: err.message
@@ -82,7 +77,7 @@ export default class UserController{
                     distanceEyesAndScreen: distanceEyesAndScreen,
                     createDate: new Date()
                 }
-                const newUser = new UserModel(userData)
+                const newUser = new SubjectModel(userData)
                 newUser.save().then(response => {
                     res.json({
                         status: "success",
@@ -100,9 +95,15 @@ export default class UserController{
     }
 
     static async apiGetAllUsers(req, res){
-        const authToken = req.get("Authorization")
-        if(authToken === adminToken){
-            UserModel.find({}).then(users => {
+        const authToken = req.get("Authorization").split(" ")[1]
+        const user = await UserModel.findOne({accessToken: authToken}).catch(err => {
+            res.status(500).json({
+                status: "error",
+                message: err.message
+            })
+        })
+        if(user){
+            SubjectModel.find({}).then(users => {
                 res.json({
                     status: "success",
                     data: users
@@ -124,22 +125,36 @@ export default class UserController{
     static async login(req, res){
         const login =  req.body.username
         const password = req.body.password
-
-        if(login === adminCredential.login && password === adminCredential.password){
-            console.log(adminToken)
-            adminToken = v4()
-            console.log(adminToken)
-            res.json({
-                status: "success",
-                data: {
-                    token: adminToken
-                }
-            })
-        }else{
-            res.status(400).json({
+        const user = await UserModel.findOne({username: login}).catch(err => {
+            res.status(500).json({
                 status: "error",
-                message: "Kombinasi username dan password yang kamu gunakan tidak tepat, silahkan diperbaiki kembali"
+                message: err.message
             })
-        }
+        })
+        if(user){
+            if(password === user.password){
+                user.accessToken = v4()
+                await user.save().catch(err => {
+                    res.status(500).json({
+                        status: "error",
+                        message: err.message
+                    })
+                })
+
+                res.json({
+                    status: "success",
+                    message: "Login berhasil",
+                    token: user.accessToken
+                })
+            }else{
+                res.status(400).json({
+                    status: "error",
+                    message: "Kombinasi username dan password yang kamu gunakan tidak tepat, silahkan diperbaiki kembali"
+                })
+            }
+        }else res.json({
+            status: 'error',
+            message: 'Username tidak ditemukan'
+        })
     }
 }

@@ -5,6 +5,7 @@ import user from "./api/user.route.js";
 import assets from "./api/assets.route.js";
 import trial from "./api/trial.route.js";
 import cors from "cors";
+import {UserModel} from "./model/UserModel.js";
 
 dotenv.config();
 const port = process.env.PORT || 3000;
@@ -24,8 +25,25 @@ app.use("/api/*",(req, res) => {
     })
 })
 
-mongoose.connect(process.env.DATABASE_URI).then(() => {
+mongoose.connect(process.env.DATABASE_URI).then(async () => {
     console.log("Database connected");
+
+    const admin = await UserModel.count().catch(err => {
+        console.log(err);
+    })
+
+    if(admin === 0) {
+        const admin = new UserModel({
+            username: process.env.USERNAME_ADMIN,
+            password: process.env.PASSWORD_ADMIN,
+            role: "admin",
+            accessToken: '',
+        })
+        await admin.save().then(() => {console.log("Admin Created")}).catch(err => {
+            console.log(err);
+        })
+    }
+
     app.listen(port, () => {
         console.log(`Server is running on port ${port}`);
     })

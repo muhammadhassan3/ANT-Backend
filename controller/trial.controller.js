@@ -1,4 +1,4 @@
-import {UserModel} from '../model/SubjectModel.js';
+import {SubjectModel} from '../model/SubjectModel.js';
 import {TrialModel} from "../model/TrialModel.js";
 import moment from "moment";
 import * as XLSX from "xlsx";
@@ -396,7 +396,7 @@ function calculateACC(condition1, condition2, data, totalTrialNumber){
 
 export default class TrialController{
     static async getTaskList(req, res){
-        const user = await UserModel.findById(req.query.id,'subjectName userId sessionNumber sex age trialCategory').catch(err => {
+        const user = await SubjectModel.findById(req.query.id,'subjectName userId sessionNumber sex age trialCategory').catch(err => {
             console.log(err);
             res.status(500).json({
                 status: "error",
@@ -485,7 +485,7 @@ export default class TrialController{
     static async getTrialResult(req,res){
         const uid = req.params.id;
         TrialModel.find({userId: uid}).then(data => {
-            UserModel.findById(uid).then(user => {
+            SubjectModel.findById(uid).then(user => {
                 if(data.length > 0){
                     let totalTrialNumber;
                     if(user.age <= 12){
@@ -525,7 +525,7 @@ export default class TrialController{
     static async downloadTrialRecord(req, res) {
         const uid = req.params.id;
         const finalData = [];
-        UserModel.findById(uid).then(subject => {
+        SubjectModel.findById(uid).then(subject => {
             if(subject){
                 TrialModel.find({userId: uid}).then(data => {
                     if(data.length > 0 ){
