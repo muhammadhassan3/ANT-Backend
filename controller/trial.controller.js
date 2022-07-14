@@ -497,6 +497,7 @@ export default class TrialController{
                     const conflict = calculateConflict(data, totalTrialNumber);
                     const meanrt = calculateGrandMean(data, totalTrialNumber);
                     const accuracy = calculateMeanACC(data, totalTrialNumber);
+                    
                     res.json({
                         alert: alert,
                         orient: orient,

@@ -25,7 +25,7 @@ app.use("/api/*",(req, res) => {
     })
 })
 
-mongoose.connect(process.env.DATABASE_URI).then(async () => {
+mongoose.connect(process.env.LOCAL_DATABASE_URI).then(async () => {
     console.log("Database connected");
 
     const admin = await UserModel.count().catch(err => {

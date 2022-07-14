@@ -29,36 +29,42 @@ export default class InstructionController{
         const uid = req.query.id
         const trialData = await TrialModel.find({userId: uid})
         if(trialData.length > 0){
-            res.redirect(`../${uid}/result`)
-        }
-        const user = await SubjectModel.findById(uid).catch(err => {
-            res.status(500).json({
-                status: "error",
-                message: err.message
+            const redirectUrl = `/${uid}/result`
+            console.log(redirectUrl)
+            res.status(302).json({
+                status: "redirect",
+                target: redirectUrl
             })
-        })
-        if(!user){
-            res.status(400).json({
-                status: "error",
-                message: "User not found"
+        }else{
+            const user = await SubjectModel.findById(uid).catch(err => {
+                res.status(500).json({
+                    status: "error",
+                    message: err.message
+                })
             })
-            return;
-        }
+            if(!user){
+                res.status(400).json({
+                    status: "error",
+                    message: "User not found"
+                })
+                return;
+            }
 
-        if(user.age <=12){
-            res.json({
-                type: "child",
-                message: childMessage,
+            if(user.age <=12){
+                res.json({
+                    type: "child",
+                    message: childMessage,
+                    assetsUrl : {
+                        image : assetsUrl.childImage
+                    }
+                })
+            }else res.json({
+                type: "adult",
+                message: adultMessage,
                 assetsUrl : {
-                    image : assetsUrl.childImage
+                    image : assetsUrl.adultImage
                 }
             })
-        }else res.json({
-            type: "adult",
-            message: adultMessage,
-            assetsUrl : {
-                image : assetsUrl.adultImage
-            }
-        })
+        }
     }
 }
